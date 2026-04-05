@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import { DM_Sans } from "next/font/google";
 import "./globals.css";
-import { Geist } from "next/font/google";
-import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-dm",
+});
 
 export const metadata: Metadata = {
   title: "Daylik",
@@ -16,10 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("h-full", "font-sans", geist.variable)}>
-      <body className="min-h-full flex flex-col bg-app-bg text-text-1 font-dm antialiased">
-        {children}
-      </body>
+    <html lang="en" className={`h-full ${dmSans.variable}`}>
+      <body className="min-h-full flex flex-col antialiased">{children}</body>
     </html>
   );
 }
