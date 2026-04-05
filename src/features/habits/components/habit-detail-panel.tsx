@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Edit2 } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   CATEGORY_COLORS,
@@ -47,7 +47,7 @@ export const HabitDetailPanel = ({
         </h2>
         <button
           onClick={onClose}
-          className="w-8 h-8 rounded-lg border border-border bg-surface-2 flex items-center justify-center hover:bg-surface-3 transition-colors shrink-0 cursor-pointer"
+          className="w-8 h-8 rounded-lg border border-border bg-card flex items-center justify-center hover:bg-surface-3 transition-colors shrink-0 cursor-pointer"
         >
           <X size={15} className="text-text-2" />
         </button>
@@ -55,7 +55,7 @@ export const HabitDetailPanel = ({
 
       <div className="flex flex-col gap-4 px-5 py-4">
         {/* Hero card */}
-        <div className="bg-surface-2 rounded-2xl border border-border p-4 text-center">
+        <div className="bg-card rounded-2xl border border-border p-4 text-center">
           <div
             className={cn(
               "w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl",
@@ -77,7 +77,7 @@ export const HabitDetailPanel = ({
           {STAT_CARDS.map(({ label, value, color }) => (
             <div
               key={label}
-              className="bg-surface-2 rounded-xl border border-border py-3 px-2 text-center"
+              className="bg-card rounded-xl border border-border py-3 px-2 text-center"
             >
               <span className={cn("text-lg font-extrabold block", color)}>
                 {value}
@@ -98,7 +98,7 @@ export const HabitDetailPanel = ({
             {STUB_LOGS.map((log) => (
               <div
                 key={log.date}
-                className="flex items-center gap-3 px-3 py-2.5 bg-surface-2 rounded-xl border border-border"
+                className="flex items-center gap-3 px-3 py-2.5 bg-card rounded-xl border border-border"
               >
                 <span className="text-sm text-text-2 flex-1">{log.date}</span>
                 <span className="text-sm font-bold text-foreground">
@@ -140,12 +140,11 @@ export const HabitDetailPanel = ({
             className="w-full border-primary/30 bg-primary/8 text-primary hover:bg-primary/15 font-bold cursor-pointer"
             onClick={() => onEdit(habit)}
           >
-            <Edit2 size={14} className="mr-2" />
             Edit habit
           </Button>
           <Button
-            variant="ghost"
-            className="w-full text-danger hover:bg-danger/10 hover:text-danger font-bold cursor-pointer"
+            variant="outline"
+            className="w-full border-danger/30 bg-danger/8 text-danger hover:bg-danger/15 hover:text-danger font-bold cursor-pointer"
             onClick={() => onDelete(habit)}
           >
             Delete habit

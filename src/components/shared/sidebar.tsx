@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Home, Trophy } from "lucide-react";
+import { ThemeToggle } from "./theme-toggle";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home },
@@ -50,6 +51,7 @@ export const Sidebar = () => {
             <p className="text-sm font-medium text-foreground truncate">Maxim</p>
             <p className="text-sm text-text-3 truncate">Level 4</p>
           </div>
+          <ThemeToggle />
         </div>
       </div>
     </aside>

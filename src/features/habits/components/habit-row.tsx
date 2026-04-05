@@ -33,7 +33,7 @@ export const HabitRow = ({
             "w-7 h-7 rounded-lg border flex items-center justify-center transition-colors cursor-pointer mx-auto",
             isCompleted
               ? "border-accent-2/40 bg-accent-2/20 hover:bg-accent-2/10"
-              : "border-border bg-surface-3 hover:bg-surface-2"
+              : "border-border-2 bg-transparent hover:bg-surface-2"
           )}
           title={isCompleted ? "Mark incomplete" : "Mark done"}
         >

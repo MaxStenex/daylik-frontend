@@ -44,10 +44,65 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Brand tokens — reference CSS vars so they respond to theme */
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-accent-2: var(--accent-2);
+  --color-accent-3: var(--accent-3);
+  --color-danger: var(--danger);
+  --color-text-1: var(--text-1);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-border-2: var(--border-2);
 }
 
-/* Daylik dark theme — maps our design palette to shadcn's semantic variables */
+/* Daylik light theme */
 :root {
+  --background: #f5f4ff;
+  --foreground: #1a1830;
+  --card: #ffffff;
+  --card-foreground: #1a1830;
+  --popover: #ffffff;
+  --popover-foreground: #1a1830;
+  --primary: #6b62d4;
+  --primary-foreground: #ffffff;
+  --secondary: #eceafe;
+  --secondary-foreground: #4a4872;
+  --muted: #eceafe;
+  --muted-foreground: #6b6890;
+  --accent: #e0defa;
+  --accent-foreground: #1a1830;
+  --destructive: #dc2626;
+  --border: rgba(107, 98, 212, 0.18);
+  --input: rgba(107, 98, 212, 0.22);
+  --ring: #6b62d4;
+  --radius: 0.75rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a1830;
+  --sidebar-primary: #6b62d4;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e0defa;
+  --sidebar-accent-foreground: #1a1830;
+  --sidebar-border: rgba(107, 98, 212, 0.18);
+  --sidebar-ring: #6b62d4;
+
+  /* Brand tokens */
+  --surface: #ffffff;
+  --surface-2: #eceafe;
+  --surface-3: #e0defa;
+  --accent-2: #1fa97c;
+  --accent-3: #d07d0a;
+  --danger: #dc2626;
+  --text-1: #1a1830;
+  --text-2: #4a4872;
+  --text-3: #9997b8;
+  --border-2: rgba(107, 98, 212, 0.22);
+}
+
+/* Daylik dark theme */
+.dark {
   --background: #0f0e17;
   --foreground: #f0eeff;
   --card: #1a1927;
@@ -75,21 +130,18 @@
   --sidebar-accent-foreground: #f0eeff;
   --sidebar-border: rgba(127, 119, 221, 0.15);
   --sidebar-ring: #7f77dd;
-}
 
-/* Additional brand tokens not covered by shadcn semantics */
-@theme {
-  --color-surface: #1a1927;
-  --color-surface-2: #222133;
-  --color-surface-3: #2a2840;
-  --color-accent-2: #5dcaa5;
-  --color-accent-3: #ef9f27;
-  --color-danger: #e24b4a;
-  --color-text-1: #f0eeff;
-  --color-text-2: #9997b8;
-  --color-text-3: #5f5e7a;
-  --color-border-2: rgba(127, 119, 221, 0.28);
-
+  /* Brand tokens */
+  --surface: #1a1927;
+  --surface-2: #222133;
+  --surface-3: #2a2840;
+  --accent-2: #5dcaa5;
+  --accent-3: #ef9f27;
+  --danger: #e24b4a;
+  --text-1: #f0eeff;
+  --text-2: #9997b8;
+  --text-3: #5f5e7a;
+  --border-2: rgba(127, 119, 221, 0.28);
 }
 
 @layer base {
