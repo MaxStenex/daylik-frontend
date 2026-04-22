@@ -1,22 +1,8 @@
 "use client";
 
-import { X } from "lucide-react";
+import { Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  CATEGORY_COLORS,
-  CATEGORY_LABELS,
-  DIFFICULTY_STYLES,
-  STUB_LOGS,
-  type Habit,
-} from "../types";
-import { cn } from "@/lib/utils";
-
-const CATEGORY_ICONS: Record<string, string> = {
-  health: "🏃",
-  learning: "📚",
-  mindfulness: "🧘",
-  productivity: "✍️",
-};
+import { STUB_LOGS, type Habit } from "../types";
 
 const STAT_CARDS = [
   { label: "Streak", value: "14", color: "text-accent-3" },
@@ -36,8 +22,6 @@ export const HabitDetailPanel = ({
   onEdit,
   onDelete,
 }: HabitDetailPanelProps) => {
-  const diff = DIFFICULTY_STYLES[habit.difficulty];
-
   return (
     <aside className="w-80 xl:w-96 shrink-0 flex flex-col h-full border-l border-border bg-surface overflow-y-auto">
       {/* Header */}
@@ -56,19 +40,14 @@ export const HabitDetailPanel = ({
       <div className="flex flex-col gap-4 px-5 py-4">
         {/* Hero card */}
         <div className="bg-card rounded-2xl border border-border p-4 text-center">
-          <div
-            className={cn(
-              "w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl",
-              `${CATEGORY_COLORS[habit.category]}/15`
-            )}
-          >
-            {CATEGORY_ICONS[habit.category]}
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 bg-primary/15">
+            <Sparkles size={22} className="text-primary" />
           </div>
           <p className="text-base font-extrabold text-foreground mb-1">
             {habit.name}
           </p>
           <p className="text-sm text-text-2">
-            {CATEGORY_LABELS[habit.category]} · {diff.label} · {habit.exp_reward} XP/day
+            {habit.daily_target} {habit.unit}/day · {habit.exp_reward} XP
           </p>
         </div>
 
@@ -79,7 +58,7 @@ export const HabitDetailPanel = ({
               key={label}
               className="bg-card rounded-xl border border-border py-3 px-2 text-center"
             >
-              <span className={cn("text-lg font-extrabold block", color)}>
+              <span className={`text-lg font-extrabold block ${color}`}>
                 {value}
               </span>
               <span className="text-xs text-text-2 block mt-0.5">

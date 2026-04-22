@@ -1,10 +1,5 @@
 import { Check } from "lucide-react";
-import {
-  CATEGORY_COLORS,
-  CATEGORY_LABELS,
-  DIFFICULTY_STYLES,
-  type Habit,
-} from "../types";
+import { type Habit } from "../types";
 import { cn } from "@/lib/utils";
 
 interface HabitRowProps {
@@ -18,7 +13,6 @@ export const HabitRow = ({
   todayProgress = 0,
   onSelect,
 }: HabitRowProps) => {
-  const diff = DIFFICULTY_STYLES[habit.difficulty];
   const isCompleted = todayProgress >= habit.daily_target;
 
   return (
@@ -46,12 +40,7 @@ export const HabitRow = ({
 
       {/* Habit name */}
       <td className="px-4 py-3 min-w-0">
-        <div className="flex items-center gap-2.5">
-          <span
-            className={cn("w-2 h-2 rounded-full shrink-0", CATEGORY_COLORS[habit.category])}
-          />
-          <span className="text-sm font-semibold text-foreground truncate">{habit.name}</span>
-        </div>
+        <span className="text-sm font-semibold text-foreground truncate">{habit.name}</span>
       </td>
 
       {/* Target */}
@@ -59,18 +48,12 @@ export const HabitRow = ({
         {habit.daily_target} {habit.unit}/day
       </td>
 
-      {/* Category */}
-      <td className="px-4 py-3 text-sm text-text-2 whitespace-nowrap">
-        {CATEGORY_LABELS[habit.category]}
-      </td>
-
       {/* XP */}
       <td className="px-4 py-3 whitespace-nowrap">
-        <span className={cn("text-xs font-bold px-2 py-0.5 rounded-full border", diff.className)}>
+        <span className="text-xs font-bold px-2 py-0.5 rounded-full border bg-primary/15 text-primary border-primary/30">
           {habit.exp_reward} XP
         </span>
       </td>
-
     </tr>
   );
 };

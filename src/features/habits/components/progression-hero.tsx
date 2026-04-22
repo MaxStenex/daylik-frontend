@@ -71,10 +71,7 @@ export const ProgressionHero = ({ progression }: ProgressionHeroProps) => {
         {/* XP info */}
         <div className="flex-1 min-w-0">
           <p className="text-base font-extrabold text-foreground mb-0.5">
-            Level {progression.level}{" "}
-            <span className="font-medium text-text-2">
-              · {progression.rank_title}
-            </span>
+            Level {progression.level}
           </p>
 
           {/* Progress bar */}

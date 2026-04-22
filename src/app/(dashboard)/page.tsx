@@ -3,16 +3,17 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ApiError } from "@/lib/api";
 import {
   HabitList,
   HabitFormDialog,
   HabitDetailPanel,
   DeleteConfirmDialog,
   ProgressionHero,
+  useHabits,
   type Habit,
 } from "@/features/habits";
 import {
-  STUB_HABITS,
   STUB_PROGRESSION,
   STUB_TODAY_PROGRESS,
 } from "@/features/habits/types";
@@ -34,14 +35,20 @@ const getFormattedDate = () => {
 };
 
 export default function HomePage() {
-  const [habits] = useState<Habit[]>(STUB_HABITS);
-  const [selectedHabit, setSelectedHabit] = useState<Habit | null>(null);
+  const { data: habits = [], isLoading, error } = useHabits();
+
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [editHabit, setEditHabit] = useState<Habit | null>(null);
   const [deleteHabit, setDeleteHabit] = useState<Habit | null>(null);
 
-  const handleSelect = (habit: Habit) => setSelectedHabit(habit);
-  const handleClosePanel = () => setSelectedHabit(null);
+  // Derive the selected habit from the latest list so a refetch (or delete) drops it cleanly.
+  const selectedHabit = selectedId
+    ? (habits.find((h) => h.id === selectedId) ?? null)
+    : null;
+
+  const handleSelect = (habit: Habit) => setSelectedId(habit.id);
+  const handleClosePanel = () => setSelectedId(null);
 
   const handleEdit = (habit: Habit) => {
     setEditHabit(habit);
@@ -49,7 +56,7 @@ export default function HomePage() {
 
   const handleDelete = (habit: Habit) => {
     setDeleteHabit(habit);
-    setSelectedHabit(null);
+    setSelectedId(null);
   };
 
   return (
@@ -80,12 +87,19 @@ export default function HomePage() {
           </div>
 
           {/* Habit list */}
-          <HabitList
-            habits={habits}
-            todayProgress={STUB_TODAY_PROGRESS}
-            onSelect={handleSelect}
-            onDelete={handleDelete}
-          />
+          {isLoading ? (
+            <p className="text-sm text-text-3 py-4 text-center">Loading habits…</p>
+          ) : error ? (
+            <p className="text-sm text-danger py-4 text-center">
+              {error instanceof ApiError ? error.error : "Failed to load habits"}
+            </p>
+          ) : (
+            <HabitList
+              habits={habits}
+              todayProgress={STUB_TODAY_PROGRESS}
+              onSelect={handleSelect}
+            />
+          )}
         </div>
       </div>
 
@@ -105,6 +119,7 @@ export default function HomePage() {
         onClose={() => setCreateOpen(false)}
       />
       <HabitFormDialog
+        key={editHabit?.id ?? "edit"}
         open={!!editHabit}
         habit={editHabit ?? undefined}
         onClose={() => setEditHabit(null)}

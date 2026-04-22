@@ -6,6 +6,8 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { ApiError } from "@/lib/api";
+import { useDeleteHabit } from "../hooks/use-habits";
 import { type Habit } from "../types";
 
 interface DeleteConfirmDialogProps {
@@ -19,8 +21,20 @@ export const DeleteConfirmDialog = ({
   habit,
   onClose,
 }: DeleteConfirmDialogProps) => {
+  const { mutate, isPending, error, reset } = useDeleteHabit();
+
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
+  const handleDelete = () => {
+    if (!habit) return;
+    mutate(habit.id, { onSuccess: () => handleClose() });
+  };
+
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+    <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
       <DialogContent className="bg-surface border-border-2 max-w-sm">
         <div className="flex flex-col items-center text-center gap-3">
           {/* Icon */}
@@ -40,30 +54,29 @@ export const DeleteConfirmDialog = ({
             </p>
           </div>
 
-          {/* Archive suggestion */}
-          <div className="w-full rounded-xl bg-accent-3/8 border border-accent-3/20 px-3 py-2.5 text-left">
-            <p className="text-[10px] font-bold text-accent-3 mb-1">
-              Archive instead?
+          {error && (
+            <p className="text-xs text-danger">
+              {error instanceof ApiError ? error.error : "Failed to delete habit"}
             </p>
-            <p className="text-[10px] text-text-2 leading-relaxed">
-              Archiving keeps all history and EXP — you can restore the habit anytime.
-            </p>
-          </div>
+          )}
 
           {/* Actions */}
           <div className="w-full flex flex-col gap-2">
             <Button
               variant="outline"
               className="w-full border-border bg-surface-2 text-text-2 hover:bg-surface-3 hover:text-foreground font-bold"
-              onClick={onClose}
+              onClick={handleClose}
+              disabled={isPending}
             >
               Cancel
             </Button>
             <Button
               className="w-full bg-danger/15 hover:bg-danger/25 text-danger border border-danger/30 font-bold"
               variant="ghost"
+              onClick={handleDelete}
+              disabled={isPending}
             >
-              Delete permanently
+              {isPending ? "Deleting…" : "Delete permanently"}
             </Button>
           </div>
 
