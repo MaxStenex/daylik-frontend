@@ -1,9 +1,6 @@
 services:
   web:
-    build:
-      context: .
-      args:
-        API_URL: ${API_URL}
+    image: ghcr.io/maxstenex/daylik-frontend:${IMAGE_TAG:-latest}
     env_file: .env
     expose:
       - "3000"
