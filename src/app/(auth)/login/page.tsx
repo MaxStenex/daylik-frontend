@@ -10,7 +10,7 @@ export default function LoginPage() {
           <span className="text-2xl font-extrabold text-foreground tracking-tight">
             Daylik
           </span>
-          <p className="text-sm text-text-2 mt-1">Sign in to your account</p>
+          <p className="text-sm text-text-2 mt-1">Welcome back — sign in to continue</p>
         </div>
 
         <LoginForm />
