@@ -15,4 +15,11 @@ services:
     depends_on:
       web:
         condition: service_healthy
+    networks:
+      - default
+      - daylik-net
     restart: unless-stopped
+
+networks:
+  daylik-net:
+    external: true
