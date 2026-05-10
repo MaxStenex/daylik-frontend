@@ -2,21 +2,17 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { clearAuthCookies, setTokenCookies } from "@/lib/api";
 import { loginApi, logoutApi, registerApi } from "../api/auth-api";
 import { useAuthStore } from "../store/auth-store";
 import type { LoginPayload, RegisterPayload } from "../types";
 
 export const useLogin = () => {
-  const { setTokens } = useAuthStore();
-  const router = useRouter();
+  const setAccessToken = useAuthStore((s) => s.setAccessToken);
 
   return useMutation({
     mutationFn: (payload: LoginPayload) => loginApi(payload),
-    onSuccess: (tokens) => {
-      setTokenCookies(tokens.access_token, tokens.refresh_token);
-      setTokens(tokens);
-      router.push("/");
+    onSuccess: ({ access_token }) => {
+      setAccessToken(access_token);
     },
   });
 };
@@ -33,15 +29,12 @@ export const useRegister = () => {
 };
 
 export const useLogout = () => {
-  const { refreshToken, clearAuth } = useAuthStore();
-  const router = useRouter();
+  const setAccessToken = useAuthStore((s) => s.setAccessToken);
 
   return useMutation({
-    mutationFn: () => logoutApi(refreshToken ?? ""),
+    mutationFn: () => logoutApi(),
     onSettled: () => {
-      clearAuth();
-      clearAuthCookies();
-      router.push("/login");
+      setAccessToken(null);
     },
   });
 };

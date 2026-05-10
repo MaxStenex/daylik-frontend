@@ -1,22 +1,4 @@
-const getCookie = (name: string): string | null => {
-  if (typeof window === "undefined") return null;
-  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
-  return match ? decodeURIComponent(match[1]) : null;
-};
-
-export const setTokenCookies = (access: string, refresh: string): void => {
-  if (typeof window === "undefined") return;
-  const flags = "Path=/; SameSite=Strict; Secure";
-  document.cookie = `access_token=${encodeURIComponent(access)}; ${flags}`;
-  document.cookie = `refresh_token=${encodeURIComponent(refresh)}; ${flags}`;
-};
-
-export const clearAuthCookies = (): void => {
-  if (typeof window === "undefined") return;
-  const flags = "Path=/; SameSite=Strict; Secure; Max-Age=0";
-  document.cookie = `access_token=; ${flags}`;
-  document.cookie = `refresh_token=; ${flags}`;
-};
+import { useAuthStore } from "@/features/auth/store/auth-store";
 
 export class ApiError extends Error {
   constructor(
@@ -28,86 +10,77 @@ export class ApiError extends Error {
   }
 }
 
-// Singleton refresh promise to prevent concurrent refresh calls
-let refreshPromise: Promise<void> | null = null;
+const getAccessToken = (): string | null =>
+  useAuthStore.getState().accessToken;
 
-const doRefresh = async (): Promise<void> => {
-  const refreshToken = getCookie("refresh_token");
-  if (!refreshToken) {
-    clearAuthCookies();
-    window.location.href = "/login";
-    return;
+const setAccessToken = (token: string | null): void => {
+  useAuthStore.getState().setAccessToken(token);
+};
+
+let refreshPromise: Promise<boolean> | null = null;
+
+const performRefresh = async (): Promise<boolean> => {
+  try {
+    const res = await fetch("/api/v1/auth/refresh", {
+      method: "POST",
+      credentials: "include",
+    });
+    if (!res.ok) {
+      setAccessToken(null);
+      return false;
+    }
+    const tokens = (await res.json()) as { access_token: string };
+    setAccessToken(tokens.access_token);
+    return true;
+  } catch {
+    setAccessToken(null);
+    return false;
   }
+};
 
-  const res = await fetch("/api/v1/auth/refresh", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refresh_token: refreshToken }),
-  });
+const ensureRefresh = (): Promise<boolean> => {
+  if (!refreshPromise) {
+    refreshPromise = performRefresh().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
+};
 
+export const bootstrapSession = (): Promise<boolean> => ensureRefresh();
+
+const buildHeaders = (init: HeadersInit | undefined): Headers => {
+  const headers = new Headers(init);
+  if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+  const token = getAccessToken();
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  return headers;
+};
+
+const parseResponse = async <T>(res: Response): Promise<T> => {
   if (!res.ok) {
-    clearAuthCookies();
-    window.location.href = "/login";
-    return;
+    const body = await res.json().catch(() => ({ error: res.statusText }));
+    throw new ApiError(res.status, body.error || res.statusText);
   }
-
-  const tokens = await res.json();
-  setTokenCookies(tokens.access_token, tokens.refresh_token);
+  if (res.status === 204) return undefined as T;
+  return res.json() as Promise<T>;
 };
 
 export const apiRequest = async <T>(
   path: string,
-  options: RequestInit & { skipAuth?: boolean } = {},
+  options: RequestInit = {},
 ): Promise<T> => {
-  const { skipAuth, ...fetchOptions } = options;
-
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(fetchOptions.headers as Record<string, string>),
-  };
-
-  if (!skipAuth) {
-    const token = getCookie("access_token");
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  const res = await fetch(path, {
-    ...fetchOptions,
-    headers,
-  });
-
-  if (res.status === 401 && !skipAuth) {
-    // Serialize concurrent refreshes into one call
-    if (!refreshPromise) {
-      refreshPromise = doRefresh().finally(() => {
-        refreshPromise = null;
-      });
-    }
-    await refreshPromise;
-
-    // Retry with new token
-    const newToken = getCookie("access_token");
-    if (newToken) headers["Authorization"] = `Bearer ${newToken}`;
-
-    const retry = await fetch(path, {
-      ...fetchOptions,
-      headers,
+  const send = () =>
+    fetch(path, {
+      ...options,
+      credentials: "include",
+      headers: buildHeaders(options.headers),
     });
 
-    if (!retry.ok) {
-      const body = await retry.json().catch(() => ({ error: retry.statusText }));
-      throw new ApiError(retry.status, body.error ?? retry.statusText);
-    }
-
-    if (retry.status === 204) return undefined as T;
-    return retry.json() as Promise<T>;
+  let res = await send();
+  if (res.status === 401) {
+    const ok = await ensureRefresh();
+    if (ok) res = await send();
   }
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: res.statusText }));
-    throw new ApiError(res.status, body.error ?? res.statusText);
-  }
-
-  if (res.status === 204) return undefined as T;
-  return res.json() as Promise<T>;
+  return parseResponse<T>(res);
 };
