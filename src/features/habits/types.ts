@@ -18,6 +18,18 @@ export interface ListHabitsResponse {
   habits: Habit[];
 }
 
+export interface HabitLog {
+  id: string;
+  habit_id: string;
+  completed_count: number;
+  created_at: string;
+}
+
+export interface CreateHabitLogPayload {
+  habit_id: string;
+  completed_count: number;
+}
+
 export interface LogEntry {
   date: string;
   value: number;
