@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { QueryProvider } from "@/components/shared/query-provider";
 import { AuthInitializer } from "@/features/auth";
 import "./globals.css";
 
-const dmSans = DM_Sans({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-  variable: "--font-dm",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-sans",
+});
+
+const jetBrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
@@ -22,7 +28,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`h-full ${dmSans.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`h-full ${plusJakarta.variable} ${jetBrainsMono.variable}`}
+      suppressHydrationWarning
+    >
       <body className="min-h-full flex flex-col antialiased">
         <ThemeProvider>
           <QueryProvider>
