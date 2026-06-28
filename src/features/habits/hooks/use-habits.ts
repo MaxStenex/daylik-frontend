@@ -9,7 +9,7 @@ import {
 } from "../api/habits-api";
 import type { HabitPayload } from "../types";
 
-const HABITS_KEY = ["habits"] as const;
+export const HABITS_KEY = ["habits"] as const;
 
 export const useHabits = () =>
   useQuery({
