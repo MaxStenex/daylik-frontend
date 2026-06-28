@@ -5,6 +5,8 @@ export interface Habit {
   daily_target: number;
   unit: string;
   created_at: string;
+  /** Today's log entry for this habit, when the backend includes it. */
+  today_log?: HabitLog;
 }
 
 export interface HabitPayload {
@@ -30,10 +32,12 @@ export interface CreateHabitLogPayload {
   completed_count: number;
 }
 
-export interface LogEntry {
-  date: string;
-  value: number;
-  completed: boolean;
+export interface UpdateHabitLogPayload {
+  completed_count: number;
+}
+
+export interface ListHabitLogsResponse {
+  logs: HabitLog[];
 }
 
 export interface UserProgression {
@@ -61,11 +65,3 @@ export const STUB_PROGRESSION: UserProgression = {
 
 // TODO: replace with real per-habit progress once backend exposes log endpoints.
 export const STUB_TODAY_PROGRESS: Record<string, number> = {};
-
-// TODO: replace with real log fetch once backend exposes it.
-export const STUB_LOGS: LogEntry[] = [
-  { date: "Today, Apr 4", value: 3.2, completed: false },
-  { date: "Yesterday, Apr 3", value: 5.1, completed: true },
-  { date: "Wed, Apr 2", value: 6.0, completed: true },
-  { date: "Tue, Apr 1", value: 4.8, completed: true },
-];

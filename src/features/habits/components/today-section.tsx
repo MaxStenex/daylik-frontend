@@ -24,19 +24,22 @@ export const TodaySection = ({
   onOpenHabit,
   onLogHabit,
 }: TodaySectionProps) => {
+  const progressFor = (h: Habit) =>
+    progressByHabitId?.[h.id] ?? h.today_log?.completed_count ?? 0;
+
   const total = habits.length;
-  const done = habits.reduce((acc, h) => {
-    const prog = progressByHabitId?.[h.id] ?? 0;
-    return prog >= h.daily_target ? acc + 1 : acc;
-  }, 0);
-  const xpEarned = habits.reduce((acc, h) => {
-    const prog = progressByHabitId?.[h.id] ?? 0;
-    return prog >= h.daily_target ? acc + h.exp_reward : acc;
-  }, 0);
-  const xpRemaining = habits.reduce((acc, h) => {
-    const prog = progressByHabitId?.[h.id] ?? 0;
-    return prog >= h.daily_target ? acc : acc + h.exp_reward;
-  }, 0);
+  const done = habits.reduce(
+    (acc, h) => (progressFor(h) >= h.daily_target ? acc + 1 : acc),
+    0,
+  );
+  const xpEarned = habits.reduce(
+    (acc, h) => (progressFor(h) >= h.daily_target ? acc + h.exp_reward : acc),
+    0,
+  );
+  const xpRemaining = habits.reduce(
+    (acc, h) => (progressFor(h) >= h.daily_target ? acc : acc + h.exp_reward),
+    0,
+  );
 
   return (
     <section className="mt-8">

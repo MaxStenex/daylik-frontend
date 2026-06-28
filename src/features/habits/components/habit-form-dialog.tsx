@@ -4,15 +4,26 @@ import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { ApiError } from "@/lib/api";
-import { useCreateHabit, useUpdateHabit } from "../hooks/use-habits";
+import { useCreateHabit, useUpdateHabit, useHabits } from "../hooks/use-habits";
 import { type Habit, type HabitPayload } from "../types";
+
+const DAILY_XP_CAP = 1000;
+const XP_MIN = 50;
+const XP_MAX = 1000;
+const XP_STEP = 50;
+
+const fieldClass =
+  "w-full rounded-[10px] border-[1.5px] px-3 py-2.5 text-sm font-medium outline-none transition-colors bg-[var(--bg-2)] border-border focus:border-coral focus:bg-surface";
+
+const labelClass =
+  "mb-2 block text-xs font-semibold uppercase tracking-[0.06em] text-text-2";
 
 interface HabitFormDialogProps {
   open: boolean;
@@ -20,14 +31,19 @@ interface HabitFormDialogProps {
   habit?: Habit;
 }
 
-export const HabitFormDialog = ({ open, onClose, habit }: HabitFormDialogProps) => {
+export const HabitFormDialog = ({
+  open,
+  onClose,
+  habit,
+}: HabitFormDialogProps) => {
   const isEdit = !!habit;
 
-  const [name, setName] = useState(habit?.name ?? "");
-  const [target, setTarget] = useState(String(habit?.daily_target ?? ""));
-  const [unit, setUnit] = useState(habit?.unit ?? "");
-  const [expReward, setExpReward] = useState(habit?.exp_reward ?? 150);
+  const [name, setName] = useState("");
+  const [target, setTarget] = useState("");
+  const [unit, setUnit] = useState("");
+  const [expReward, setExpReward] = useState(300);
 
+  const { data: habits = [] } = useHabits();
   const createMutation = useCreateHabit();
   const updateMutation = useUpdateHabit();
   const activeMutation = isEdit ? updateMutation : createMutation;
@@ -37,19 +53,30 @@ export const HabitFormDialog = ({ open, onClose, habit }: HabitFormDialogProps) 
   useEffect(() => {
     if (!open) return;
     setName(habit?.name ?? "");
-    setTarget(String(habit?.daily_target ?? ""));
+    setTarget(habit?.daily_target ? String(habit.daily_target) : "");
     setUnit(habit?.unit ?? "");
-    setExpReward(habit?.exp_reward ?? 150);
+    setExpReward(habit?.exp_reward ?? 300);
     createMutation.reset();
     updateMutation.reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, habit?.id]);
 
+  // Editing a habit excludes its own reward from the budget so the meter
+  // reflects the pending change, mirroring the design.
+  const usedXp = habits.reduce(
+    (sum, h) => sum + (habit && h.id === habit.id ? 0 : h.exp_reward),
+    0,
+  );
+  const remaining = Math.max(DAILY_XP_CAP - usedXp, 0);
+  const totalAfter = usedXp + expReward;
+  const over = totalAfter > DAILY_XP_CAP;
+
+  const targetNum = Number(target);
+  const valid =
+    !!name.trim() && !!unit.trim() && Number.isFinite(targetNum) && targetNum > 0;
+
   const handleSubmit = () => {
-    const targetNum = Number(target);
-    if (!name.trim() || !unit.trim() || !Number.isFinite(targetNum) || targetNum <= 0) {
-      return;
-    }
+    if (!valid) return;
     const payload: HabitPayload = {
       name: name.trim(),
       exp_reward: expReward,
@@ -69,63 +96,64 @@ export const HabitFormDialog = ({ open, onClose, habit }: HabitFormDialogProps) 
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="bg-surface border-border-2 max-w-lg">
+      <DialogContent className="border-border bg-surface sm:max-w-[560px]">
         <DialogHeader>
-          <DialogTitle className="text-lg font-extrabold text-foreground">
-            {isEdit ? "Edit habit" : "New habit"}
+          <DialogTitle className="text-[20px] font-bold tracking-[-0.02em] text-foreground">
+            {isEdit ? "Edit habit" : "Create a new habit"}
           </DialogTitle>
+          <DialogDescription className="text-[13px]" style={{ color: "var(--text-3)" }}>
+            {isEdit
+              ? `Update “${habit?.name}” — your stats and streak stay intact.`
+              : `You have ${remaining} XP/day left in your daily budget.`}
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-5 mt-2">
+        <div className="mt-1 flex flex-col gap-4">
           {/* Name */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-bold text-text-2 tracking-widest uppercase">
-              Habit name
-            </label>
-            <Input
+          <div>
+            <label className={labelClass}>Habit name</label>
+            <input
+              className={fieldClass}
               value={name}
+              autoFocus
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Run 5 km"
-              className="bg-surface border-border-2 text-foreground placeholder:text-text-3 focus-visible:ring-primary"
             />
           </div>
 
-          {/* Daily target */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-bold text-text-2 tracking-widest uppercase">
-              Daily target
-            </label>
-            <div className="flex gap-2">
-              <Input
+          {/* Target + unit */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>Daily target</label>
+              <input
+                className={fieldClass}
                 type="number"
+                min={1}
                 value={target}
                 onChange={(e) => setTarget(e.target.value)}
-                placeholder="5"
-                className="bg-surface border-border-2 text-foreground placeholder:text-text-3 focus-visible:ring-primary"
+                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
               />
-              <Input
+            </div>
+            <div>
+              <label className={labelClass}>Unit</label>
+              <input
+                className={fieldClass}
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
-                placeholder="km"
-                className="w-24 shrink-0 bg-surface border-border-2 text-foreground placeholder:text-text-3 focus-visible:ring-primary"
+                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
               />
             </div>
           </div>
 
-          {/* EXP reward */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] font-bold text-text-2 tracking-widest uppercase">
-                EXP reward
-              </label>
-              <span className="text-sm font-bold text-primary">
-                {expReward} XP
-              </span>
-            </div>
+          {/* XP reward + budget */}
+          <div>
+            <label className={labelClass}>Daily EXP reward</label>
             <Slider
-              min={50}
-              max={600}
-              step={50}
+              min={XP_MIN}
+              max={XP_MAX}
+              step={XP_STEP}
+              // "center" avoids base-ui's inset prehydration <script>, which
+              // warns when the slider mounts client-side inside this dialog.
+              thumbAlignment="center"
               value={[expReward]}
               onValueChange={(vals) => {
                 const v = Array.isArray(vals) ? vals[0] : vals;
@@ -133,9 +161,38 @@ export const HabitFormDialog = ({ open, onClose, habit }: HabitFormDialogProps) 
               }}
               className="[&_[role=slider]]:bg-primary [&_[role=slider]]:border-primary"
             />
-            <div className="flex justify-between">
-              <span className="text-[10px] text-text-3">50 XP</span>
-              <span className="text-[10px] text-text-3">600 XP</span>
+            <div
+              className="mt-3 flex items-center gap-3 rounded-xl px-3.5 py-3"
+              style={{
+                background: over ? "var(--coral-soft)" : "var(--violet-soft)",
+              }}
+            >
+              <span className="text-lg leading-none">{over ? "⚠️" : "⚡"}</span>
+              <div className="flex-1">
+                <div
+                  className="mb-1.5 text-xs font-semibold"
+                  style={{ color: over ? "var(--coral)" : "var(--text-2)" }}
+                >
+                  {over
+                    ? `Over the daily ${DAILY_XP_CAP} XP cap!`
+                    : `Daily XP budget: ${totalAfter} / ${DAILY_XP_CAP}`}
+                </div>
+                <div
+                  className="h-2 overflow-hidden rounded-full"
+                  style={{ background: "oklch(1 0 0 / 0.4)" }}
+                >
+                  <div
+                    className="h-full rounded-full transition-[width] duration-200"
+                    style={{
+                      width: `${Math.min((totalAfter / DAILY_XP_CAP) * 100, 100)}%`,
+                      background: over ? "var(--coral)" : "var(--violet)",
+                    }}
+                  />
+                </div>
+              </div>
+              <span className="mono shrink-0 text-xs font-bold whitespace-nowrap">
+                +{expReward} XP/day
+              </span>
             </div>
           </div>
 
@@ -145,11 +202,10 @@ export const HabitFormDialog = ({ open, onClose, habit }: HabitFormDialogProps) 
             </p>
           )}
 
-          {/* Submit */}
           <Button
             onClick={handleSubmit}
-            disabled={isPending}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
+            disabled={!valid || isPending}
+            className="w-full bg-primary font-bold text-primary-foreground hover:bg-primary/90"
           >
             {isPending
               ? isEdit

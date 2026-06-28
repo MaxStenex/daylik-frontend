@@ -22,7 +22,7 @@ export const HabitCard = ({
   onLog,
 }: HabitCardProps) => {
   const display = getHabitDisplay(habit);
-  const progress = progressToday ?? display.progressToday;
+  const progress = progressToday ?? habit.today_log?.completed_count ?? 0;
   const target = habit.daily_target;
   const done = progress >= target;
 
@@ -112,18 +112,9 @@ export const HabitCard = ({
           className={cn(
             "text-[12.5px] font-semibold px-3 py-1.5 rounded-[8px] border transition-colors",
             done
-              ? "cursor-default pointer-events-none text-white border-mint"
-              : "cursor-pointer hover:bg-coral hover:text-white hover:border-coral"
+              ? "cursor-default pointer-events-none bg-mint text-white border-mint"
+              : "cursor-pointer bg-surface-2 text-foreground border-border hover:bg-coral hover:text-white hover:border-coral"
           )}
-          style={
-            done
-              ? { background: "var(--mint)", color: "white" }
-              : {
-                  background: "var(--surface-2)",
-                  borderColor: "var(--border)",
-                  color: "var(--foreground)",
-                }
-          }
         >
           {done ? "Completed" : "Log progress"}
         </span>

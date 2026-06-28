@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api";
 import {
   HabitFormDialog,
+  HabitDetailModal,
+  DeleteConfirmDialog,
+  LogProgressDialog,
   LevelCard,
   StreakCard,
   TodaySection,
@@ -38,8 +41,21 @@ const getFormattedDate = () =>
 export default function HomePage() {
   const { data: habits = [], isLoading, error } = useHabits();
   const [createOpen, setCreateOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [logId, setLogId] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const contribCells = useMemo(() => buildStubContribCells(18), []);
+  // Derive habits from the live list so they vanish from open panels/dialogs
+  // once a habit is deleted (query invalidation refetches `habits`).
+  const byId = (id: string | null) =>
+    id ? (habits.find((h) => h.id === id) ?? null) : null;
+  const selectedHabit = byId(selectedId);
+  const logHabit = byId(logId);
+  const editHabit = byId(editId);
+  const deleteHabit = byId(deleteId);
+
+  const contribCells = useMemo(() => buildStubContribCells(), []);
 
   const earnedAchievements = STUB_ACHIEVEMENTS.filter((a) => a.earned);
 
@@ -91,7 +107,11 @@ export default function HomePage() {
           {error instanceof ApiError ? error.error : "Failed to load habits"}
         </p>
       ) : (
-        <TodaySection habits={habits} />
+        <TodaySection
+          habits={habits}
+          onOpenHabit={(h) => setSelectedId(h.id)}
+          onLogHabit={(h) => setLogId(h.id)}
+        />
       )}
 
       {/* Stats */}
@@ -102,13 +122,49 @@ export default function HomePage() {
       />
 
       {/* Contribution grid */}
-      <ContribCard cells={contribCells} weeks={18} />
+      <ContribCard cells={contribCells} />
 
       {/* Achievements preview */}
       <AchievementStrip items={earnedAchievements.slice(0, 4)} />
 
-      {/* Create habit dialog (existing, unstyled — phase 5 redesigns it) */}
+      {/* Habit detail modal */}
+      <HabitDetailModal
+        habit={selectedHabit}
+        open={!!selectedHabit}
+        onClose={() => setSelectedId(null)}
+        onEdit={(h) => {
+          setSelectedId(null);
+          setEditId(h.id);
+        }}
+        onDelete={(h) => {
+          setSelectedId(null);
+          setDeleteId(h.id);
+        }}
+        onLog={(h) => {
+          setSelectedId(null);
+          setLogId(h.id);
+        }}
+      />
+
+      {/* Create / edit habit dialogs */}
       <HabitFormDialog open={createOpen} onClose={() => setCreateOpen(false)} />
+      <HabitFormDialog
+        open={!!editHabit}
+        habit={editHabit ?? undefined}
+        onClose={() => setEditId(null)}
+      />
+
+      {/* Log progress + delete confirmation */}
+      <LogProgressDialog
+        open={!!logHabit}
+        habit={logHabit}
+        onClose={() => setLogId(null)}
+      />
+      <DeleteConfirmDialog
+        open={!!deleteHabit}
+        habit={deleteHabit}
+        onClose={() => setDeleteId(null)}
+      />
     </div>
   );
 }

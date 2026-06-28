@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Medal, Trophy } from "lucide-react";
+import { Home, Medal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./theme-toggle";
 import { STUB_PROGRESSION } from "@/features/habits/types";
@@ -18,7 +18,6 @@ interface NavLink {
 const navItems: NavLink[] = [
   { href: "/", label: "Home", icon: Home },
   { href: "/achievements", label: "Achievements", icon: Medal, comingSoon: true },
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy, comingSoon: true },
 ];
 
 export const Sidebar = () => {
